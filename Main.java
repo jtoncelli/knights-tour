@@ -32,6 +32,9 @@ public class Main {
         board[row+hMove][col+vMove] = 0;
         return board;
     }
+    public static Integer[]tryMove(int row, int col, int hMove, int vMove){
+        return new Integer[]{row + hMove, col+vMove};
+    }
     public static int[][] updateBoard(int[][] board){
         //updates accessibility index for each square after making a move
         for(int row=0; row<board.length; row++){
@@ -144,7 +147,88 @@ public class Main {
         }
         System.out.println(counter + " moves made");
     }
-    public static int[] findMinDist(int[][] moveOptions){
+
+    public static ArrayList<Integer[]> possibleMoves(int[][] board, int row, int col){
+        ArrayList<Integer[]> possibleMoves = new ArrayList<Integer[]>();
+        for(int i = 0; i < 8; i++){
+            if(canMove(board, row, col, chooseMove(i)[0], chooseMove(i)[1])){
+                possibleMoves.add(new Integer[]{chooseMove(i)[0], chooseMove(i)[1]});
+            }
+        }
+        return possibleMoves;
+    }
+    public static ArrayList<Integer[]> shortestPath(int[][] board, Integer[] source, Integer[] target){
+
+        Node startNode = new Node(source, null, possibleMoves(board, source[0], source[1]));
+
+        QueueFrontier frontier = new QueueFrontier();
+        frontier.add(startNode);
+        ArrayList<Integer[]> path = new ArrayList<Integer[]>();
+        ArrayList<Integer[]> exploredNodes = new ArrayList<Integer[]>();
+
+        while(true){
+            if(frontier.empty()) break;
+
+            Node node = frontier.remove();;
+
+            exploredNodes.add(node.state);
+
+            for(Integer[] move : node.action){
+                if(canMove(board, node.state[0], node.state[1], move[0], move[1])) {
+                    Integer[] result = tryMove(node.state[0], node.state[1], move[0], move[1]);
+                    if (Arrays.equals(result, target)) {
+                        path.add(new Integer[]{move[0], move[1]});
+
+                        while (node.parent != null) {
+                            path.add(0, new Integer[]{node.state[0], node.state[1]});
+                            node = node.parent;
+                        }
+                    } else {
+                        if (!exploredNodes.contains(move)) {
+                            frontier.add(new Node(result, node, possibleMoves(makeMove(board, node.state[0], node.state[1], move[0], move[1]), result[0], result[1])));
+                            exploredNodes.add(move);
+                        }
+                    }
+                }
+
+            }
+        }
+
+        return path;
+    }
+    public static void main(String[] args){
+
+//        knightsTour();
+        int board[][] = new int[8][8];
+        for(int i = 0; i < board.length; i++){
+            for(int j = 0; j < board[i].length; j++){
+                board[i][j] = 1;
+            }
+        }
+        ArrayList<Integer[]> path = shortestPath(board, new Integer[]{0, 0}, new Integer[]{1, 2});
+        int counter = 0;
+        for(Integer[] move : path){
+            System.out.println("Move " +  (counter++) + ": " + move[0] + " ," + move[1]);
+        }
+//        System.out.println(Arrays.toString(decidePathMove(board, 0,0, 4, 2, 0)));
+
+////
+//
+//        ArrayList<Integer[]> path = findPath(board, new ArrayList<Integer[]>() ,0, 0, 1, 4);
+//        int startRow = 0;
+//        int startCol = 0;
+//        System.out.println("Initial position: " + startRow + ", " + startCol);
+//        for(int i = 0; i < path.size(); i++){
+//            System.out.println("Move " + i + ":" + Arrays.toString(path.get(i)));
+//            startRow+= path.get(i)[0];
+//            startCol+= path.get(i)[1];
+//            System.out.println("After move " + i + ": " + startRow + ", " + startCol);
+//        }
+
+    }
+}
+/*
+public static int[] findMinDist(int[][] moveOptions){
         int min = -1;
         int bestMove[] = new int []{0,0};
         for(int j = 0; j < moveOptions.length; j++){
@@ -226,29 +310,4 @@ public class Main {
         }
         return path;
     }
-    public static void main(String[] args){
-
-//        knightsTour();
-        int board[][] = new int[8][8];
-        for(int i = 0; i < board.length; i++){
-            for(int j = 0; j < board[i].length; j++){
-                board[i][j] = 1;
-            }
-        }
-        System.out.println(Arrays.toString(decidePathMove(board, 0,0, 4, 2, 0)));
-
-////
-//
-//        ArrayList<Integer[]> path = findPath(board, new ArrayList<Integer[]>() ,0, 0, 1, 4);
-//        int startRow = 0;
-//        int startCol = 0;
-//        System.out.println("Initial position: " + startRow + ", " + startCol);
-//        for(int i = 0; i < path.size(); i++){
-//            System.out.println("Move " + i + ":" + Arrays.toString(path.get(i)));
-//            startRow+= path.get(i)[0];
-//            startCol+= path.get(i)[1];
-//            System.out.println("After move " + i + ": " + startRow + ", " + startCol);
-//        }
-
-    }
-}
+ */
